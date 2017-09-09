@@ -66,10 +66,10 @@ decryptpassfunc () {
         mainfunc
     fi
     kdialog --title "kpassman" --passivepopup "Password for $SERVICE_NAME has been copied to clipboard!\nClipboard will be cleared in 45 seconds." 15
-    mainfunc
     sleep 45
     echo -n "Password cleared from clipboard" | xclip -selection c -i
     kdialog --title "kpassman" --passivepopup "Password for $SERVICE_NAME cleared from clipboard!" 15
+    mainfunc
 }
 
 backupfunc () {
