@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=kpassman
+Comment=A password manager that uses gpg to encrypt and decrypt passwords, and uses kdialog for a GUI.
+Exec=/opt/kpassman/kpassman
+Icon=/opt/kpassman/kpassman.png
+Categories=Utility;
+Terminal=false

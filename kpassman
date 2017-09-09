@@ -1,0 +1,179 @@
+#!/bin/bash
+# kpassman - a password manager that uses gpg to encrypt and decrypt stored passwords and uses kdialog to provide a GUI.
+# Written by simonizor https://www.simonizor.gq
+# Dependencies: gpg, xclip, kdialog
+# License: GPL v2 Only
+
+addpassfunc () {
+    SERVICE_NAME="$(kdialog --title "kpassman" --inputbox "Input the name for the password:")"
+    case $? in
+        1)
+            mainfunc
+            ;;
+    esac
+    if [ -z "$SERVICE_NAME" ]; then
+        kdialog --title "kpassman" --error "No name was entered!"
+        mainfunc
+    fi
+    if [ -f "$KPASS_DIR/$SERVICE_NAME/$SERVICE_NAME.gpg" ]; then
+        kdialog --title "kpassman" --error "$SERVICE_NAME already exists!\nRemove $SERVICE_NAME before adding a new password for $SERVICE_NAME."
+        mainfunc
+    fi
+    PASS_INPUT1="$(kdialog --title "kpassman" --password "Enter your password for $SERVICE_NAME:")"
+    case $? in
+        1)
+            mainfunc
+            ;;
+    esac
+    PASS_INPUT2="$(kdialog --title "kpassman" --password "Enter your password $SERVICE_NAME again:")"
+    case $? in
+        1)
+            mainfunc
+            ;;
+    esac
+    if [ "$PASS_INPUT1" != "$PASS_INPUT2" ]; then
+        kdialog --title "kpassman" --error "Passwords do not match!"
+        mainfunc
+    fi
+    if [ ! -d "$KPASS_DIR/$SERVICE_NAME" ]; then
+        mkdir "$KPASS_DIR"/"$SERVICE_NAME"
+    fi
+    kdialog --title "kpassman" --msgbox "Enter the password to be used for encrypting and decrypting the stored password for $SERVICE_NAME in the next window."
+    echo "$PASS_INPUT1" | gpg --no-tty -c -o "$KPASS_DIR"/"$SERVICE_NAME"/"$SERVICE_NAME".gpg
+    if [ -f "$KPASS_DIR/$SERVICE_NAME/$SERVICE_NAME.gpg" ]; then
+        kdialog --title "kpassman" --msgbox "Password for $SERVICE_NAME was stored!"
+    else
+        rm -r "$KPASS_DIR"/"$SERVICE_NAME"
+        kdialog --title "kpassman" --error "Error storing password for $SERVICE_NAME!"
+    fi
+    mainfunc
+}
+
+decryptpassfunc () {
+    SERVICE_NAME="$(kdialog --combobox "Select a password to decrypt:" $(dir -C -w 1 $KPASS_DIR))"
+    case $? in
+        1)
+            mainfunc
+            ;;
+    esac
+    if [ -z "$SERVICE_NAME" ]; then
+        kdialog --title "kpassman" --error "No selection made!"
+        mainfunc
+    fi
+    echo -n "$(gpg --no-tty -d "$KPASS_DIR"/"$SERVICE_NAME"/"$SERVICE_NAME".gpg)" | xclip -selection c -i
+    if [ "$(xclip -selection c -o)" = "" ]; then
+        kdialog --title "kpassman" --error --text "Wrong password or gpg failure!"
+        mainfunc
+    fi
+    kdialog --title "kpassman" --passivepopup "Password for $SERVICE_NAME has been copied to clipboard!\nClipboard will be cleared in 45 seconds." 15
+    sleep 45
+    echo -n "Password cleared from clipboard" | xclip -selection c -i
+    kdialog --title "kpassman" --passivepopup "Password for $SERVICE_NAME cleared from clipboard!" 15
+    mainfunc
+}
+
+backupfunc () {
+    BACKUP_DIR="$(kdialog --title "kpassman" --getexistingdirectory "$HOME")"
+    case $? in
+        1)
+            mainfunc
+            ;;
+    esac
+    if [ ! -d "$BACKUP_DIR" ]; then
+        kdialog --title "kpassman" --error "Error finding directory!"
+        mainfunc
+    fi
+    cp -r "$KPASS_DIR"/* "$BACKUP_DIR"/ && kdialog --title "kpassman" --msgbox "Passwords backed up to $BACKUP_DIR!" || kdialog --title "kpassman" --error "Error backing up passwords!"
+    mainfunc
+}
+
+removepassfunc () {
+    SERVICE_NAME="$(kdialog --combobox "Please be careful; password will be removed forever!!\nSelect a password to remove:" $(dir -C -w 1 $KPASS_DIR))"
+    case $? in
+        1)
+            mainfunc
+            ;;
+    esac
+    if [ -z "$SERVICE_NAME" ]; then
+        kdialog --title "kpassman" --error "No selection made!"
+        mainfunc
+    fi
+    echo -n "$(gpg --no-tty -d "$KPASS_DIR"/"$SERVICE_NAME"/"$SERVICE_NAME".gpg)" | xclip -selection c -i
+    if [ "$(xclip -selection c -o)" = "" ]; then
+        kdialog --title "kpassman" --error --text "Wrong password or gpg failure!"
+        mainfunc
+    fi
+    echo "Password cleared from clipboard" | xclip -selection c -i
+    kdialog --title "kpassman" --warningyesno "Are you sure you want to delete the stored password for $SERVICE_NAME?"
+    case $? in
+        0)
+            rm -r "$KPASS_DIR"/"$SERVICE_NAME"/
+            kdialog --title "kpassman" --msgbox "Password for $SERVICE_NAME was removed!"
+            mainfunc
+            ;;
+        1)
+            kdialog --title "kpassman" --msgbox "Password for $SERVICE_NAME was not removed."
+            mainfunc
+            ;;
+    esac
+}
+
+apgpassgenfunc () {
+    PASSGEN="$(kdialog --title "kpassman" --combobox "Select a password to copy to your clipboard:" $(apg -a 1 -m 30 -n 4))"
+    case $? in
+        0)
+            echo "$PASSGEN" | xclip -selection c -i
+            mainfunc
+            ;;
+        1)
+            mainfunc
+            ;;
+    esac
+}
+
+if [ -d "$HOME/.gpgpassman" ] && [ ! -f "$HOME/.kpassman/.kpassman.config" ]; then
+    KPASS_DIR="$HOME/.gpgpassman"
+    echo "KPASS_DIR="\"$KPASS_DIR\""" > "$KPASS_DIR"/.kpassman.config
+elif [ -d "$HOME/.kpassman" ] && [ ! -f "$HOME/.kpassman/.kpassman.config" ]; then
+    KPASS_DIR="$HOME/.kpassman"
+    echo "KPASS_DIR="\"$KPASS_DIR\""" > "$KPASS_DIR"/.kpassman.config
+else
+    mkdir "$HOME"/.kpassman
+    KPASS_DIR="$HOME/.kpassman"
+    echo "KPASS_DIR="\"$KPASS_DIR\""" > "$KPASS_DIR"/.kpassman.config
+fi
+. "$KPASS_DIR"/.kpassman.config
+mainfunc () {
+    KPASS_START="$(kdialog --title "kpassman" --combobox "Welcome to kpassman.\nWhat would you like to do?" "Add a new encrypted password" "Decrypt a stored password" "Backup your stored passwords" "Remove a stored password" "Generate passwords using apg")"
+    case $? in
+        1)
+            exit 0
+            ;;
+    esac
+    case $KPASS_START in
+        Add*)
+            addpassfunc
+            exit 0
+            ;;
+        Decrypt*)
+            decryptpassfunc
+            exit 0
+            ;;
+        Backup*)
+            backupfunc
+            exit 0
+            ;;
+        Remove*)
+            removepassfunc
+            exit 0
+            ;;
+        Generate*)
+            apgpassgenfunc
+            exit 0
+            ;;
+        *)
+            exit 0
+            ;;
+    esac
+}
+mainfunc
