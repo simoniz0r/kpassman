@@ -68,7 +68,7 @@ decryptpassfunc () {
     fi
     echo -n "$(gpg --no-tty -d "$KPASS_DIR"/"$SERVICE_NAME"/"$SERVICE_NAME".gpg)" | xclip -selection c -i
     if [ "$(xclip -selection c -o)" = "" ]; then
-        kdialog --title "kpassman" --error --text "Wrong password or gpg failure!"
+        kdialog --title "kpassman" --error "Wrong password or gpg failure!"
         mainfunc
     fi
     kdialog --title "kpassman" --passivepopup "Password for $SERVICE_NAME has been copied to clipboard!\nClipboard will be cleared in 45 seconds." 15
