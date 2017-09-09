@@ -49,6 +49,12 @@ addpassfunc () {
     mainfunc
 }
 
+passclearfunc () {
+    sleep 45
+    echo -n "Password cleared from clipboard" | xclip -selection c -i
+    kdialog --title "kpassman" --passivepopup "Password for $SERVICE_NAME cleared from clipboard!" 15
+}
+
 decryptpassfunc () {
     SERVICE_NAME="$(kdialog --combobox "Select a password to decrypt:" $(dir -C -w 1 $KPASS_DIR))"
     case $? in
@@ -66,9 +72,7 @@ decryptpassfunc () {
         mainfunc
     fi
     kdialog --title "kpassman" --passivepopup "Password for $SERVICE_NAME has been copied to clipboard!\nClipboard will be cleared in 45 seconds." 15
-    sleep 45
-    echo -n "Password cleared from clipboard" | xclip -selection c -i
-    kdialog --title "kpassman" --passivepopup "Password for $SERVICE_NAME cleared from clipboard!" 15
+    passclearfunc &
     mainfunc
 }
 
