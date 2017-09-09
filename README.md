@@ -4,5 +4,18 @@ A password manager that uses gpg to encrypt and decrypt stored passwords and use
 
 Dependencies: gpg, xclip, kdialog, apg (optional - for generating passwords)
 
+Main menu:
+
 ![kpassman](/Screenshot.png)
 
+Add password:
+
+![kpassman](/Screenshot2.png)
+
+Decrypt password:
+
+![kpassman](/Screenshot3.png)
+
+Generate passwords using apg:
+
+![kpassman](/Screenshot4.png)
