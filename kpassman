@@ -126,7 +126,7 @@ apgpassgenfunc () {
     PASSGEN="$(kdialog --title "kpassman" --combobox "<h2 align="center">kpassman</h2><h2 align="center"><img src='/opt/kpassman/kpassman.png' width=50></h2><h4 align="center">Select a password to copy to your clipboard:</h4>" $(apg -a 1 -m 30 -n 4))"
     case $? in
         0)
-            echo "$PASSGEN" | xclip -selection c -i
+            echo -n "$PASSGEN" | xclip -selection c -i
             mainfunc
             ;;
         1)
