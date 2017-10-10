@@ -4,47 +4,53 @@
 # Dependencies: gpg, xclip, kdialog, apg (optional - for generating passwords)
 # License: GPL v2 Only
 
+if type pydialog >/dev/null 2>&1; then
+    KDIALOG='pydialog'
+else
+    KDIALOG='kdialog'
+fi
+
 addpassfunc () {
-    SERVICE_NAME="$(kdialog --title "kpassman" --inputbox "<h2 align="center">kpassman</h2><h2 align="center"><img src='/opt/kpassman/kpassman.png' width=50></h2><h4 align="center">Input the name for the password:</h4>")"
+    SERVICE_NAME="$($KDIALOG --title "kpassman" --inputbox "Input the name for the password:")"
     case $? in
         1)
             mainfunc
             ;;
     esac
     if [ -z "$SERVICE_NAME" ]; then
-        kdialog --title "kpassman" --error "No name was entered!"
+        $KDIALOG --title "kpassman" --error "No name was entered!"
         mainfunc
     fi
     if [ -f "$KPASS_DIR/$SERVICE_NAME/$SERVICE_NAME.gpg" ]; then
-        kdialog --title "kpassman" --error "$SERVICE_NAME already exists!\nRemove $SERVICE_NAME before adding a new password for $SERVICE_NAME."
+        $KDIALOG --title "kpassman" --error "$SERVICE_NAME already exists!\nRemove $SERVICE_NAME before adding a new password for $SERVICE_NAME."
         mainfunc
     fi
-    PASS_INPUT1="$(kdialog --title "kpassman" --password "Enter your password for $SERVICE_NAME:")"
+    PASS_INPUT1="$($KDIALOG --title "kpassman" --password "Enter your password for $SERVICE_NAME:")"
     case $? in
         1)
             mainfunc
             ;;
     esac
-    PASS_INPUT2="$(kdialog --title "kpassman" --password "Enter your password $SERVICE_NAME again:")"
+    PASS_INPUT2="$($KDIALOG --title "kpassman" --password "Enter your password $SERVICE_NAME again:")"
     case $? in
         1)
             mainfunc
             ;;
     esac
     if [ "$PASS_INPUT1" != "$PASS_INPUT2" ]; then
-        kdialog --title "kpassman" --error "Passwords do not match!"
+        $KDIALOG --title "kpassman" --error "Passwords do not match!"
         mainfunc
     fi
     if [ ! -d "$KPASS_DIR/$SERVICE_NAME" ]; then
         mkdir "$KPASS_DIR"/"$SERVICE_NAME"
     fi
-    kdialog --title "kpassman" --msgbox "Enter the password to be used for encrypting and decrypting the stored password for $SERVICE_NAME in the next window."
+    $KDIALOG --title "kpassman" --msgbox "Enter the password to be used for encrypting and decrypting the stored password for $SERVICE_NAME in the next window."
     echo "$PASS_INPUT1" | gpg --no-tty -c -o "$KPASS_DIR"/"$SERVICE_NAME"/"$SERVICE_NAME".gpg
     if [ -f "$KPASS_DIR/$SERVICE_NAME/$SERVICE_NAME.gpg" ]; then
-        kdialog --title "kpassman" --msgbox "Password for $SERVICE_NAME was stored!"
+        $KDIALOG --title "kpassman" --msgbox "Password for $SERVICE_NAME was stored!"
     else
         rm -r "$KPASS_DIR"/"$SERVICE_NAME"
-        kdialog --title "kpassman" --error "Error storing password for $SERVICE_NAME!"
+        $KDIALOG --title "kpassman" --error "Error storing password for $SERVICE_NAME!"
     fi
     mainfunc
 }
@@ -52,78 +58,78 @@ addpassfunc () {
 passclearfunc () {
     sleep 45
     echo -n "Password cleared from clipboard" | xclip -selection c -i
-    kdialog --title "kpassman" --passivepopup "Password for $SERVICE_NAME cleared from clipboard!" 15
+    $KDIALOG --msgbox "Password for $SERVICE_NAME cleared from clipboard!"
 }
 
 decryptpassfunc () {
-    SERVICE_NAME="$(kdialog --title "kpassman" --combobox "<h2 align="center">kpassman</h2><h2 align="center"><img src='/opt/kpassman/kpassman.png' width=50></h2><h4 align="center">Select a password to decrypt:</h4>" $(dir -C -w 1 $KPASS_DIR))"
+    SERVICE_NAME="$($KDIALOG --title "kpassman" --combobox "Select a password to decrypt:" $(dir -C -w 1 $KPASS_DIR))"
     case $? in
         1)
             mainfunc
             ;;
     esac
     if [ -z "$SERVICE_NAME" ]; then
-        kdialog --title "kpassman" --error "No selection made!"
+        $KDIALOG --title "kpassman" --error "No selection made!"
         mainfunc
     fi
     echo -n "$(gpg --no-tty -d "$KPASS_DIR"/"$SERVICE_NAME"/"$SERVICE_NAME".gpg)" | xclip -selection c -i
     if [ "$(xclip -selection c -o)" = "" ]; then
-        kdialog --title "kpassman" --error "Wrong password or gpg failure!"
+        $KDIALOG --title "kpassman" --error "Wrong password or gpg failure!"
         mainfunc
     fi
-    kdialog --title "kpassman" --passivepopup "Password for $SERVICE_NAME has been copied to clipboard!\nClipboard will be cleared in 45 seconds." 15
+    $KDIALOG --msgbox "Password for $SERVICE_NAME has been copied to clipboard!  Clipboard will be cleared in 45 seconds."
     passclearfunc &
     mainfunc
 }
 
 backupfunc () {
-    BACKUP_DIR="$(kdialog --title "kpassman" --getexistingdirectory "$HOME")"
+    BACKUP_DIR="$($KDIALOG --title "kpassman" --getexistingdirectory "$HOME")"
     case $? in
         1)
             mainfunc
             ;;
     esac
     if [ ! -d "$BACKUP_DIR" ]; then
-        kdialog --title "kpassman" --error "Error finding directory!"
+        $KDIALOG --title "kpassman" --error "Error finding directory!"
         mainfunc
     fi
-    cp -r "$KPASS_DIR"/* "$BACKUP_DIR"/ && kdialog --title "kpassman" --msgbox "Passwords backed up to $BACKUP_DIR!" || kdialog --title "kpassman" --error "Error backing up passwords!"
+    cp -r "$KPASS_DIR"/* "$BACKUP_DIR"/ && $KDIALOG --title "kpassman" --msgbox "Passwords backed up to $BACKUP_DIR!" || $KDIALOG --title "kpassman" --error "Error backing up passwords!"
     mainfunc
 }
 
 removepassfunc () {
-    SERVICE_NAME="$(kdialog --title "kpassman" --combobox "<h2 align="center">kpassman</h2><h2 align="center"><img src='/opt/kpassman/kpassman.png' width=50></h2><h4 align="center">Select a password to remove:</h4>" $(dir -C -w 1 $KPASS_DIR))"
+    SERVICE_NAME="$($KDIALOG --title "kpassman" --combobox "Select a password to remove:" $(dir -C -w 1 $KPASS_DIR))"
     case $? in
         1)
             mainfunc
             ;;
     esac
     if [ -z "$SERVICE_NAME" ]; then
-        kdialog --title "kpassman" --error "No selection made!"
+        $KDIALOG --title "kpassman" --error "No selection made!"
         mainfunc
     fi
     echo -n "$(gpg --no-tty -d "$KPASS_DIR"/"$SERVICE_NAME"/"$SERVICE_NAME".gpg)" | xclip -selection c -i
     if [ "$(xclip -selection c -o)" = "" ]; then
-        kdialog --title "kpassman" --error --text "Wrong password or gpg failure!"
+        $KDIALOG --title "kpassman" --error --text "Wrong password or gpg failure!"
         mainfunc
     fi
     echo "Password cleared from clipboard" | xclip -selection c -i
-    kdialog --title "kpassman" --warningyesno "Are you sure you want to delete the stored password for $SERVICE_NAME?"
+    $KDIALOG --title "kpassman" --warningyesno "Are you sure you want to delete the stored password for $SERVICE_NAME?"
     case $? in
         0)
             rm -r "$KPASS_DIR"/"$SERVICE_NAME"/
-            kdialog --title "kpassman" --msgbox "Password for $SERVICE_NAME was removed!"
+            $KDIALOG --title "kpassman" --msgbox "Password for $SERVICE_NAME was removed!"
             mainfunc
             ;;
         1)
-            kdialog --title "kpassman" --msgbox "Password for $SERVICE_NAME was not removed."
+            $KDIALOG --title "kpassman" --msgbox "Password for $SERVICE_NAME was not removed."
             mainfunc
             ;;
     esac
 }
 
 apgpassgenfunc () {
-    PASSGEN="$(kdialog --title "kpassman" --combobox "<h2 align="center">kpassman</h2><h2 align="center"><img src='/opt/kpassman/kpassman.png' width=50></h2><h4 align="center">Select a password to copy to your clipboard:</h4>" $(apg -a 1 -m 30 -n 10))"
+    PASSGEN="$($KDIALOG --title "kpassman" --combobox "Select a password to copy to your clipboard:" $(apg -a 1 -m 30 -n 10))"
     case $? in
         0)
             echo -n "$PASSGEN" | xclip -selection c -i
@@ -148,7 +154,7 @@ else
 fi
 . "$KPASS_DIR"/.kpassman.config
 mainfunc () {
-    KPASS_START="$(kdialog --title "kpassman" --combobox "<h2 align="center">kpassman</h2><h2 align="center"><img src='/opt/kpassman/kpassman.png' width=50></h2><h4 align="center">Welcome to kpassman</h4><h4 align="center">Select an option below:</h4>" "Add a new encrypted password" "Decrypt a stored password" "Backup your stored passwords" "Remove a stored password" "Generate passwords using apg")"
+    KPASS_START="$($KDIALOG --title "kpassman" --combobox "Welcome to kpassman.  Select an option below:" "Add a new encrypted password" "Decrypt a stored password" "Backup your stored passwords" "Remove a stored password" "Generate passwords using apg")"
     case $? in
         1)
             exit 0
