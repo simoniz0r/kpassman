@@ -58,7 +58,7 @@ addpassfunc () {
 passclearfunc () {
     sleep 45
     echo -n "Password cleared from clipboard" | xclip -selection c -i
-    $KDIALOG --msgbox "Password for $SERVICE_NAME cleared from clipboard!"
+    notify-send "kpassman" "Password for $SERVICE_NAME cleared from clipboard." || $KDIALOG --msgbox "Password for $SERVICE_NAME cleared from clipboard!"
 }
 
 decryptpassfunc () {
@@ -77,7 +77,7 @@ decryptpassfunc () {
         $KDIALOG --title "kpassman" --error "Wrong password or gpg failure!"
         mainfunc
     fi
-    $KDIALOG --msgbox "Password for $SERVICE_NAME has been copied to clipboard!  Clipboard will be cleared in 45 seconds."
+    notify-send "kpassman" "Password for $SERVICE_NAME copied to clipboard for 45 seconds." || $KDIALOG --msgbox "Password for $SERVICE_NAME has been copied to clipboard!  Clipboard will be cleared in 45 seconds."
     passclearfunc &
     mainfunc
 }
