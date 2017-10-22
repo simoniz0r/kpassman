@@ -4,8 +4,11 @@
 # Dependencies: gpg, xclip, kdialog, apg (optional - for generating passwords)
 # License: GPL v2 Only
 
-if type pydialog >/dev/null 2>&1; then
-    KDIALOG='pydialog'
+REALPATH="$(readlink -f $0)"
+RUNNING_DIR="$(dirname "$REALPATH")"
+
+if [ -f "$RUNNING_DIR/pydialog/pydialog.py" ]; then
+    KDIALOG="$RUNNING_DIR/pydialog/pydialog.py"
 else
     KDIALOG='kdialog'
 fi
