@@ -11,7 +11,7 @@ else
 fi
 
 addpassfunc () {
-    SERVICE_NAME="$($KDIALOG --title "kpassman" --inputbox "Input the name for the password:")"
+    SERVICE_NAME="$($KDIALOG --title "kpassman" --inputbox "<h2 align="center">kpassman</h2><h2 align="center"><img src='/opt/kpassman/kpassman.png' width=50></h2><h4 align="center">Input the name for the password:</h4>")"
     case $? in
         1)
             mainfunc
@@ -62,7 +62,7 @@ passclearfunc () {
 }
 
 decryptpassfunc () {
-    SERVICE_NAME="$($KDIALOG --title "kpassman" --combobox "Select a password to decrypt:" $(dir -C -w 1 $KPASS_DIR))"
+    SERVICE_NAME="$($KDIALOG --title "kpassman" --combobox "<h2 align="center">kpassman</h2><h2 align="center"><img src='/opt/kpassman/kpassman.png' width=50></h2><h4 align="center">Select a password to decrypt:</h4>" $(dir -C -w 1 $KPASS_DIR))"
     case $? in
         1)
             mainfunc
@@ -98,7 +98,7 @@ backupfunc () {
 }
 
 removepassfunc () {
-    SERVICE_NAME="$($KDIALOG --title "kpassman" --combobox "Select a password to remove:" $(dir -C -w 1 $KPASS_DIR))"
+    SERVICE_NAME="$($KDIALOG --title "kpassman" --combobox "<h2 align="center">kpassman</h2><h2 align="center"><img src='/opt/kpassman/kpassman.png' width=50></h2><h4 align="center">Select a password to remove:</h4>" $(dir -C -w 1 $KPASS_DIR))"
     case $? in
         1)
             mainfunc
@@ -129,7 +129,7 @@ removepassfunc () {
 }
 
 apgpassgenfunc () {
-    PASSGEN="$($KDIALOG --title "kpassman" --combobox "Select a password to copy to your clipboard:" $(apg -a 1 -m 30 -n 10))"
+    PASSGEN="$($KDIALOG --title "kpassman" --combobox "<h2 align="center">kpassman</h2><h2 align="center"><img src='/opt/kpassman/kpassman.png' width=50></h2><h4 align="center">Select a password to copy to your clipboard:</h4>" $(apg -a 1 -m 30 -n 10))"
     case $? in
         0)
             echo -n "$PASSGEN" | xclip -selection c -i
@@ -154,7 +154,7 @@ else
 fi
 . "$KPASS_DIR"/.kpassman.config
 mainfunc () {
-    KPASS_START="$($KDIALOG --title "kpassman" --combobox "Welcome to kpassman.  Select an option below:" "Add a new encrypted password" "Decrypt a stored password" "Backup your stored passwords" "Remove a stored password" "Generate passwords using apg")"
+    KPASS_START="$($KDIALOG --title "kpassman" --combobox "<h2 align="center">kpassman</h2><h2 align="center"><img src='/opt/kpassman/kpassman.png' width=50></h2><h4 align="center">Welcome to kpassman</h4><h4 align="center">Select an option below:</h4>" "Add a new encrypted password" "Decrypt a stored password" "Backup your stored passwords" "Remove a stored password" "Generate passwords using apg")"
     case $? in
         1)
             exit 0
