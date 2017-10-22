@@ -7,10 +7,13 @@
 REALPATH="$(readlink -f $0)"
 RUNNING_DIR="$(dirname "$REALPATH")"
 
-if [ -f "$RUNNING_DIR/pydialog/pydialog.py" ]; then
+if type kdialog >/dev/null 2>&1; then
+    KDIALOG='kdialog'
+elif [ -f "$RUNNING_DIR/pydialog/pydialog.py" ]; then
     KDIALOG="$RUNNING_DIR/pydialog/pydialog.py"
 else
-    KDIALOG='kdialog'
+    echo "Missing dependencies needed to run!"
+    exit 1
 fi
 
 addpassfunc () {
