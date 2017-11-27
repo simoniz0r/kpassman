@@ -51,7 +51,17 @@ addpassfunc () {
         mkdir "$KPASS_DIR"/"$SERVICE_NAME"
     fi
     PASSPHRASE1="$($KDIALOG --title "kpassman" --password "Enter the password to be used for encrypting and decrypting $SERVICE_NAME:")"
+    case $? in
+        1)
+            mainfunc
+            ;;
+    esac
     PASSPHRASE2="$($KDIALOG --title "kpassman" --password "Enter the password to be used for encrypting and decrypting $SERVICE_NAME again:")"
+    case $? in
+        1)
+            mainfunc
+            ;;
+    esac
     if [ "$PASSPHRASE1" != "$PASSPHRASE2" ]; then
         $KDIALOG --title "kpassman" --error "Passwords do not match!"
         mainfunc
@@ -84,6 +94,11 @@ decryptpassfunc () {
         mainfunc
     fi
     PASSPHRASE="$($KDIALOG --title "kpassman" --password "Enter your password to decrypt $SERVICE_NAME:")"
+    case $? in
+        1)
+            mainfunc
+            ;;
+    esac
     echo -n "$(gpg --batch --no-tty --passphrase "$PASSPHRASE" -d "$KPASS_DIR"/"$SERVICE_NAME"/"$SERVICE_NAME".gpg)" | xclip -selection c -i
     if [ "$(xclip -selection c -o)" = "" ]; then
         $KDIALOG --title "kpassman" --error "Wrong password or gpg failure!"
@@ -121,6 +136,11 @@ removepassfunc () {
         mainfunc
     fi
     PASSPHRASE="$($KDIALOG --title "kpassman" --password "Enter your password to decrypt $SERVICE_NAME:")"
+    case $? in
+        1)
+            mainfunc
+            ;;
+    esac
     echo -n "$(gpg --batch --no-tty --passphrase "$PASSPHRASE" -d "$KPASS_DIR"/"$SERVICE_NAME"/"$SERVICE_NAME".gpg)" | xclip -selection c -i
     if [ "$(xclip -selection c -o)" = "" ]; then
         $KDIALOG --title "kpassman" --error --text "Wrong password or gpg failure!"
