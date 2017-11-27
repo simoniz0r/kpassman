@@ -124,6 +124,19 @@ backupfunc () {
     mainfunc
 }
 
+exportfunc () {
+    PASSPHRASE="$($KDIALOG --title "kpassman" --password "NOTE: This will only work if you use the same master password for all stored passwords!  Passwords will be exported to $HOME/kpassman_export.csv.")"
+    case $? in
+        1)
+            mainfunc
+            ;;
+    esac
+    echo ":Title:;:Username:;:Password:" > "$HOME"/kpassman_export.csv
+    for SERVICE_NAME in $(dir -C -w 1 $KPASS_DIR); do
+        echo ":$SERVICE_NAME:;:$USER:;:$(gpg --batch --no-tty --passphrase "$PASSPHRASE" -d "$KPASS_DIR"/"$SERVICE_NAME"/"$SERVICE_NAME".gpg):" >> "$HOME"/kpassman_export.csv
+    done
+}
+
 removepassfunc () {
     SERVICE_NAME="$($KDIALOG --title "kpassman" --combobox "<h2 align="center">kpassman</h2><h2 align="center"><img src='/opt/kpassman/kpassman.png' width=50></h2><h4 align="center">Select a password to remove:</h4>" $(dir -C -w 1 $KPASS_DIR))"
     case $? in
@@ -186,7 +199,7 @@ else
 fi
 . "$KPASS_DIR"/.kpassman.config
 mainfunc () {
-    KPASS_START="$($KDIALOG --title "kpassman" --combobox "<h2 align="center">kpassman</h2><h2 align="center"><img src='/opt/kpassman/kpassman.png' width=50></h2><h4 align="center">Welcome to kpassman</h4><h4 align="center">Select an option below:</h4>" "Add a new encrypted password" "Decrypt a stored password" "Backup your stored passwords" "Remove a stored password" "Generate passwords using apg")"
+    KPASS_START="$($KDIALOG --title "kpassman" --combobox "<h2 align="center">kpassman</h2><h2 align="center"><img src='/opt/kpassman/kpassman.png' width=50></h2><h4 align="center">Welcome to kpassman</h4><h4 align="center">Select an option below:</h4>" "Add a new encrypted password" "Decrypt a stored password" "Backup your stored passwords" "Export your passwords to a csv" "Remove a stored password" "Generate passwords using apg")"
     case $? in
         1)
             exit 0
@@ -203,6 +216,10 @@ mainfunc () {
             ;;
         Backup*)
             backupfunc
+            exit 0
+            ;;
+        Export*)
+            exportfunc
             exit 0
             ;;
         Remove*)
