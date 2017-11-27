@@ -174,7 +174,7 @@ apgpassgenfunc () {
     esac
 }
 
-if [ -d "$HOME/.gpgpassman" ] && [ ! -f "$HOME/.kpassman/.kpassman.config" ]; then
+if [ -d "$HOME/.gpgpassman" ] && [ ! -f "$HOME/.gpgpassman/.kpassman.config" ]; then
     KPASS_DIR="$HOME/.gpgpassman"
     echo "KPASS_DIR="\"$KPASS_DIR\""" > "$KPASS_DIR"/.kpassman.config
 elif [ -d "$HOME/.kpassman" ] && [ ! -f "$HOME/.kpassman/.kpassman.config" ]; then
