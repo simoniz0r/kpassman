@@ -110,17 +110,13 @@ decryptpassfunc () {
 }
 
 backupfunc () {
-    BACKUP_DIR="$($KDIALOG --title "kpassman" --getexistingdirectory "$HOME")"
+    BACKUP_DIR="$($KDIALOG --title "kpassman" --getsavefilename "$HOME" "Tar archive (*.tar *.tar.gz)")"
     case $? in
         1)
             mainfunc
             ;;
     esac
-    if [ ! -d "$BACKUP_DIR" ]; then
-        $KDIALOG --title "kpassman" --error "Error finding directory!"
-        mainfunc
-    fi
-    cp -r "$KPASS_DIR"/* "$BACKUP_DIR"/ && $KDIALOG --title "kpassman" --msgbox "Passwords backed up to $BACKUP_DIR!" || $KDIALOG --title "kpassman" --error "Error backing up passwords!"
+    tar cf "$BACKUP_DIR" "$KPASS_DIR"/* && $KDIALOG --title "kpassman" --msgbox "Passwords backed up to $BACKUP_DIR!" || $KDIALOG --title "kpassman" --error "Error backing up passwords!"
     mainfunc
 }
 
