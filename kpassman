@@ -77,9 +77,17 @@ addpassfunc () {
 }
 
 passclearfunc () {
-    sleep 45
+    sleep 15
     echo -n "Password cleared from clipboard" | xclip -selection c -i
     notify-send "kpassman" "Password for $SERVICE_NAME cleared from clipboard." || $KDIALOG --msgbox "Password for $SERVICE_NAME cleared from clipboard!"
+    exit 0
+}
+
+databasenotiffunc () {
+    sleep 3
+    notify-send "kpassman" "Password database unlocked until kpassman is closed." || $KDIALOG --msgbox "Password database unlocked until kpassman is closed."
+    touch "$KPASS_DIR"/.kpassman.lock
+    exit 0
 }
 
 decryptpassfunc () {
@@ -93,18 +101,25 @@ decryptpassfunc () {
         $KDIALOG --title "kpassman" --error "No selection made!"
         mainfunc
     fi
-    PASSPHRASE="$($KDIALOG --title "kpassman" --password "Enter your password to decrypt $SERVICE_NAME:")"
-    case $? in
-        1)
-            mainfunc
-            ;;
-    esac
+    if [ ! -f "$KPASS_DIR/.kpassman.lock" ]; then
+        PASSPHRASE="$($KDIALOG --title "kpassman" --password "Enter your password to decrypt $SERVICE_NAME:")"
+        case $? in
+            1)
+                mainfunc
+                ;;
+        esac
+    fi
     echo -n "$(gpg --batch --no-tty --passphrase "$PASSPHRASE" -d "$KPASS_DIR"/"$SERVICE_NAME"/"$SERVICE_NAME".gpg)" | xclip -selection c -i
     if [ "$(xclip -selection c -o)" = "" ]; then
         $KDIALOG --title "kpassman" --error "Wrong password or gpg failure!"
+        PASSPHRASE=""
+        rm -f "$KPASS_DIR"/.kpassman.lock
         mainfunc
     fi
-    notify-send "kpassman" "Password for $SERVICE_NAME copied to clipboard for 45 seconds." || $KDIALOG --msgbox "Password for $SERVICE_NAME has been copied to clipboard!  Clipboard will be cleared in 45 seconds."
+    notify-send "kpassman" "Password for $SERVICE_NAME copied to clipboard for 15 seconds." || $KDIALOG --msgbox "Password for $SERVICE_NAME has been copied to clipboard!  Clipboard will be cleared in 15 seconds."
+    if [ ! -f "$KPASS_DIR/.kpassman.lock" ]; then
+        databasenotiffunc &
+    fi
     passclearfunc &
     mainfunc
 }
@@ -198,6 +213,10 @@ mainfunc () {
     KPASS_START="$($KDIALOG --title "kpassman" --combobox "<h2 align="center">kpassman</h2><h2 align="center"><img src='/opt/kpassman/kpassman.png' width=50></h2><h4 align="center">Welcome to kpassman</h4><h4 align="center">Select an option below:</h4>" "Add a new encrypted password" "Decrypt a stored password" "Backup your stored passwords" "Export your passwords to a csv" "Remove a stored password" "Generate passwords using apg")"
     case $? in
         1)
+            if [ -f "$KPASS_DIR/.kpassman.lock" ]; then
+                rm "$KPASS_DIR"/.kpassman.lock
+                notify-send "kpassman" "Password database locked." || $KDIALOG --msgbox "Password database locked."
+            fi
             exit 0
             ;;
     esac
@@ -227,6 +246,10 @@ mainfunc () {
             exit 0
             ;;
         *)
+            if [ -f "$KPASS_DIR/.kpassman.lock" ]; then
+                rm "$KPASS_DIR"/.kpassman.lock
+                notify-send "kpassman" "Password database locked." || $KDIALOG --msgbox "Password database locked."
+            fi
             exit 0
             ;;
     esac
