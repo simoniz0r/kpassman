@@ -112,6 +112,7 @@ exportfunc () {
             for SERVICE_NAME in $(dir -C -w 1 $KPASS_DIR); do
                 echo ":$SERVICE_NAME:;:$USER:;:$(gpg --batch --no-tty --passphrase "$PASSPHRASE" -d "$KPASS_DIR"/"$SERVICE_NAME"/"$SERVICE_NAME".gpg):" >> "$HOME"/kpassman_export.csv
             done
+            mainfunc
             ;;
     esac
 }
